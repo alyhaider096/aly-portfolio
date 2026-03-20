@@ -1,0 +1,93 @@
+/* ==================== PARTICLE SYSTEM ==================== */
+.hero-particles {
+  position: absolute;
+  inset: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  width: var(--size, 3px);
+  height: var(--size, 3px);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(100, 200, 255, 0.9),
+    rgba(80, 140, 255, 0.4)
+  );
+  box-shadow: 0 0 12px rgba(100, 200, 255, 0.7);
+
+  animation: orbit var(--duration, 10s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+
+  left: 50%;
+  top: 50%;
+  will-change: transform, opacity;
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(140px) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) translateX(140px) rotate(-360deg) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Particle glow pulse */
+@keyframes particleGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(100, 200, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.9);
+  }
+}
+
+.particle:nth-child(3n) {
+  animation: orbit var(--duration, 10s) linear infinite,
+    particleGlow 2s ease-in-out infinite;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .particle {
+    --size: 2px !important;
+  }
+
+  @keyframes orbit {
+    0% {
+      transform: rotate(0deg) translateX(100px) rotate(0deg) scale(0.5);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(360deg) translateX(100px) rotate(-360deg) scale(1);
+      opacity: 0;
+    }
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .particle {
+    animation: none;
+    opacity: 0.3;
+  }
+}

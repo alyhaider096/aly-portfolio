@@ -1,0 +1,26 @@
+/* ─── RotatingText ─── */
+
+.rotating-text-wrapper {
+    display: inline-flex;
+    overflow: hidden;
+    height: 1.2em;
+    vertical-align: middle;
+    position: relative;
+}
+
+.rotating-text-inner {
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.4s ease;
+    will-change: transform, opacity;
+}
+
+.rotating-text-inner.is-entering {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.rotating-text-inner.is-exiting {
+    transform: translateY(-100%);
+    opacity: 0;
+}

@@ -1,0 +1,295 @@
+/* ═══════════════════════════════════════════
+   EXPERTISE SECTION — Stacking Cards Flow
+   Uses unified theme tokens from globals.css
+   ═══════════════════════════════════════════ */
+
+.expertise-section {
+    position: relative;
+    background: #0a0906;
+    overflow: hidden;
+    z-index: 14;
+    min-height: 100vh;
+}
+
+/* ─── Sticky Container ─── */
+.expertise-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1200px;
+}
+
+.expertise-bg {
+    position: absolute;
+    inset: 0;
+    background: #0a0906;
+    z-index: 0;
+}
+
+.expertise-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(196, 164, 107, 0.03) 0%, transparent 60%);
+}
+
+/* ─── Title ─── */
+.exp-title-wrap {
+    position: absolute;
+    top: 50%;
+    left: 48px;
+    transform: translateY(-50%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.exp-title {
+    font-family: var(--font-display);
+    font-size: clamp(60px, 8vw, 110px);
+    letter-spacing: 3px;
+    line-height: 0.9;
+    color: var(--fg);
+    text-transform: uppercase;
+}
+
+.exp-title-accent {
+    color: var(--accent);
+}
+
+.exp-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 5px;
+    color: var(--fg-muted);
+    margin-top: 12px;
+}
+
+/* ─── Cards Stage ─── */
+#cards-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1500px;
+    transform-style: preserve-3d;
+    z-index: 5;
+    will-change: transform;
+}
+
+/* ─── Cards ─── */
+.exp-card {
+    position: absolute;
+    width: 320px;
+    height: 420px;
+    background: var(--bg-surface);
+    border: 1px solid var(--accent-dim);
+    border-radius: 12px;
+    padding: 36px 28px;
+    display: flex;
+    flex-direction: column;
+    will-change: transform, opacity;
+    transform-style: preserve-3d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(226, 213, 190, 0.05);
+    overflow: hidden;
+    cursor: pointer;
+    left: 50%;
+    top: 50%;
+    margin-left: -160px;
+    margin-top: -210px;
+}
+
+.exp-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.exp-card:hover::before {
+    opacity: 1;
+}
+
+.exp-card-num {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--accent-dim);
+    margin-bottom: auto;
+}
+
+.exp-card-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 12px rgba(196, 164, 107, 0.2));
+}
+
+.exp-card-title {
+    font-family: var(--font-display);
+    font-size: 38px;
+    letter-spacing: 2px;
+    color: var(--fg);
+    line-height: 1;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.exp-card-desc {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.7;
+    color: var(--fg-muted);
+    margin-bottom: 20px;
+}
+
+.exp-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    position: relative;
+    z-index: 3;
+}
+
+.exp-card-tag {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border: 1px solid var(--accent-dim);
+    border-radius: 20px;
+    color: var(--accent);
+    background: rgba(196, 164, 107, 0.06);
+    text-transform: uppercase;
+}
+
+.exp-card-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #d4b878);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+}
+
+.exp-card:hover .exp-card-bar {
+    transform: scaleX(1);
+}
+
+/* ─── TEXT REVEAL (Phase 3) ─── */
+.exp-text-reveal {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 8;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.exp-text-reveal-word {
+    display: flex;
+    gap: 0;
+    overflow: visible;
+}
+
+.exp-text-reveal-letter {
+    font-family: var(--font-display);
+    font-size: clamp(72px, 12vw, 180px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(196, 164, 107, 0.6);
+    text-transform: uppercase;
+    display: inline-block;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 0 40px rgba(196, 164, 107, 0.08));
+}
+
+.exp-text-reveal-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 6px;
+    color: rgba(196, 164, 107, 0.2);
+    margin-top: 32px;
+    text-transform: uppercase;
+}
+
+/* ─── Scene Wrapper ─── */
+.exp-scene-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    opacity: 0;
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 768px) {
+    .exp-title-wrap {
+        left: 0;
+        right: 0;
+        padding: 0 24px;
+        top: 100px;
+        transform: translateY(0);
+    }
+
+    .exp-title {
+        font-size: clamp(32px, 10vw, 52px);
+        letter-spacing: 1px;
+    }
+
+    .exp-sub {
+        font-size: 8px;
+        letter-spacing: 3px;
+    }
+
+    .exp-card {
+        width: 240px;
+        height: 320px;
+        padding: 24px 20px;
+        margin-left: -120px;
+        margin-top: -160px;
+    }
+
+    .exp-card-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    .exp-card-title {
+        font-size: 28px;
+    }
+
+    .exp-card-desc {
+        font-size: 9px;
+        margin-bottom: 14px;
+    }
+
+    .exp-card-tag {
+        font-size: 7px;
+        padding: 3px 8px;
+    }
+
+    .exp-text-reveal-letter {
+        font-size: 48px;
+        -webkit-text-stroke-width: 1px;
+    }
+
+    .exp-text-reveal-sub {
+        font-size: 8px;
+        letter-spacing: 4px;
+    }
+}

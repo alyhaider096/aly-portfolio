@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Preloader - ALYHA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            overflow: hidden;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .name-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .name-reveal {
+            font-size: clamp(3rem, 8vw, 7rem);
+            color: #d4c9b0;
+            letter-spacing: 0.3em;
+            font-weight: 300;
+            text-transform: uppercase;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .letter {
+            display: inline-block;
+            opacity: 0;
+        }
+
+        .light-beam {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(200, 147, 42, 0.4), transparent);
+            transform: translateY(-50%) translateX(-400px);
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .accent-line {
+            width: 0;
+            height: 1px;
+            background: #c8932a;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(200, 147, 42, 0.5);
+        }
+
+        .glow-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(139, 0, 0, 0.1), transparent 60%);
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        #main-content {
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #e8e0d0;
+            visibility: hidden;
+        }
+
+        h1 { font-size: 3rem; letter-spacing: 0.1em; }
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <canvas id="bg-canvas"></canvas>
+        <div class="glow-overlay"></div>
+        
+        <div class="name-container">
+            <div class="name-reveal" id="nameText">
+                <!-- Letters injected via JS -->
+            </div>
+            <div class="light-beam" id="beam"></div>
+            <div style="display: flex; justify-content: center;">
+                <div class="accent-line" id="line"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <h1>Welcome to the Experience</h1>
+        <p>Hero Section Transitions Here...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const BRAND_NAME = "ALYHA"; 
+            const nameContainer = document.getElementById('nameText');
+            
+            // Inject letters for stagger
+            BRAND_NAME.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.className = 'letter';
+                nameContainer.appendChild(span);
+            });
+
+            // --- THREE.JS SCENE SETUP ---
+            const canvas = document.getElementById('bg-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Particles BufferGeometry
+            const count = 200;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            const velocities = [];
+            
+            const colorChoices = [
+                new THREE.Color('#8b0000'), // 60% Crimson
+                new THREE.Color('#e8e0d0'), // 25% Ghost White
+                new THREE.Color('#c8932a')  // 15% Gold
+            ];
+
+            for(let i = 0; i < count; i++) {
+                // Initial random positions in horizontal band
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 6;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+
+                // Color distribution
+                let color;
+                const rand = Math.random();
+                if(rand < 0.6) color = colorChoices[0];
+                else if(rand < 0.85) color = colorChoices[1];
+                else color = colorChoices[2];
+
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+
+                // Velocity components
+                velocities.push({
+                    x: (Math.random() - 0.5) * 0.005,
+                    y: 0.002 + Math.random() * 0.008,
+                    z: (Math.random() - 0.5) * 0.002
+                });
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            // Points Material with vertex colors
+            const material = new THREE.PointsMaterial({
+                vertexColors: true,
+                sizeAttenuation: true,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                size: 0.18 // Base size in world space
+            });
+
+            const points = new THREE.Points(geometry, material);
+            scene.add(points);
+
+            camera.position.z = 8;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                const pos = geometry.attributes.position.array;
+                for(let i = 0; i < count; i++) {
+                    pos[i * 3] += velocities[i].x;
+                    pos[i * 3 + 1] += velocities[i].y;
+                    pos[i * 3 + 2] += velocities[i].z;
+                    
+                    // Simple wrapping/recycle logic for drift
+                    if(pos[i * 3 + 1] > 6) pos[i * 3 + 1] = -6;
+                }
+                geometry.attributes.position.needsUpdate = true;
+                
+                points.rotation.y += 0.0005;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // --- GSAP CINEMATIC SEQUENCE ---
+            const mainTL = gsap.timeline({ delay: 0.5 });
+
+            // 1. Initial State
+            gsap.set('.letter', { opacity: 0, y: 30 });
+            gsap.set('#beam', { x: -400 });
+            gsap.set('#line', { width: 0 });
+
+            // 2. Name Reveal
+            mainTL.to('.letter', {
+                opacity: 1,
+                y: 0,
+                duration: 1.2,
+                stagger: 0.08,
+                ease: "expo.out"
+            });
+
+            // 3. Horizontal Light Sweep
+            mainTL.to('#beam', {
+                x: window.innerWidth + 400,
+                duration: 1.5,
+                ease: "power2.inOut"
+            }, "-=0.2");
+
+            // 4. Accent Line growth
+            mainTL.to('#line', {
+                width: 60,
+                duration: 0.8
+            }, "-=0.8");
+
+            // 5. Exit Transition Transition (After 3s total)
+            mainTL.add('exitStart', '+=1.0');
+
+            // Rush toward camera
+            mainTL.to(points.position, {
+                z: 15,
+                duration: 0.8,
+                ease: "power3.in"
+            }, 'exitStart');
+
+            mainTL.to(material, {
+                opacity: 0,
+                duration: 0.8
+            }, 'exitStart');
+
+            // Name text spread
+            mainTL.to('#nameText', {
+                opacity: 0,
+                letterSpacing: '1em',
+                duration: 0.6,
+                ease: "power3.in"
+            }, 'exitStart');
+
+            // Fade Preloader and Reveal Hero
+            mainTL.to('#preloader', {
+                opacity: 0,
+                duration: 0.4,
+                display: 'none',
+                onComplete: () => {
+                    // Show main content
+                    const main = document.getElementById('main-content');
+                    main.style.visibility = 'visible';
+                    gsap.fromTo(main, {
+                        opacity: 0,
+                        y: 20
+                    }, {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+                }
+            }, 'exitStart+=0.6');
+        });
+    </script>
+</body>
+</html>

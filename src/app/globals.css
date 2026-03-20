@@ -1,26 +1,92 @@
+/* ═══════════════════════════════════════════
+   UNIFIED THEME — ALY PORTFOLIO
+   Single source of truth for fonts & colors
+   ═══════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700&family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* ---------- Design Tokens ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* Fonts */
+  --font-heading: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-display: 'Cormorant Garamond', serif;
+
+  /* Colors — Warm Dark Luxe */
+  --bg: #090805;
+  --bg-surface: #0d0b07;
+  --fg: #e2d5be;
+  --fg-muted: #9a8a6a;
+  --accent: #c4a46b;
+  --accent-dim: rgba(196, 164, 107, 0.25);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---------- Baseline ---------- */
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-heading);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prevent weird horizontal jitter when GSAP transforms */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* ---------- Selection ---------- */
+::selection {
+  background: rgba(196, 164, 107, 0.2);
+}
+
+/* ---------- Scrollbar (subtle) ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f1a12;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2b2316;
+}
+
+/* ---------- Grain overlay ---------- */
+.grain {
+  background-image: url("/assets/fx/noise.jpg");
+  background-size: 240px 240px;
+  background-repeat: repeat;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+}
+
+/* ---------- Cursor ---------- */
+html {
+  cursor: none;
+}
+
+@media (pointer: coarse) {
+  html {
+    cursor: auto;
+  }
 }

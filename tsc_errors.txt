@@ -1,0 +1,2 @@
+﻿src/app/components/ExpertiseSection.tsx(11,45): error TS2306: File 'C:/Users/alyha/OneDrive/Desktop/aly portfolio/aly-portfolio/src/app/components/ExpertiseScene.tsx' is not a module.
+src/app/components/work/CylinderGallery.tsx(191,18): error TS2741: Property 'args' is missing in type '{ attach: string; array: Float32Array<ArrayBuffer>; count: number; itemSize: number; }' but required in type 'Mutable<Overwrite<Partial<Overwrite<BufferAttribute, MathProps<BufferAttribute> & ReactProps<BufferAttribute>>>, Omit<...>>>'.

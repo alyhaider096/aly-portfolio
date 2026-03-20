@@ -1,0 +1,636 @@
+/* ================= CARD BASE ================= */
+.hero-card {
+  position: relative;
+  width: 380px;
+  height: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+
+  background: rgba(8, 8, 12, 0.92);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
+
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  box-shadow:
+    0 80px 180px rgba(0, 0, 0, 0.9),
+    0 30px 80px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  
+  transition: 
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  
+  will-change: transform;
+}
+
+/* ================= HOVER STATE ================= */
+.hero-card.is-hovered {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow:
+    0 100px 220px rgba(0, 0, 0, 1),
+    0 40px 100px rgba(120, 200, 255, 0.2),
+    0 20px 60px rgba(120, 200, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ================= EDGE GLOW ================= */
+.hero-card-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 34px;
+  background: linear-gradient(
+    135deg,
+    rgba(120, 200, 255, 0.5),
+    rgba(80, 180, 255, 0.3),
+    rgba(140, 210, 255, 0.5)
+  );
+  filter: blur(28px);
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero-card.is-hovered .hero-card-glow {
+  opacity: 1;
+}
+
+/* ================= PARTICLES ================= */
+.hero-particles {
+  position: absolute;
+  inset: -100px;
+  pointer-events: none;
+  z-index: 10;
+  overflow: visible;
+}
+
+.particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(140, 200, 255, 0.9),
+    rgba(140, 200, 255, 0.3)
+  );
+  box-shadow: 
+    0 0 10px rgba(140, 200, 255, 0.6),
+    0 0 20px rgba(120, 190, 255, 0.4);
+
+  opacity: 0;
+  transform: scale(0.5);
+  animation: orbit var(--duration) linear infinite;
+  animation-delay: var(--delay);
+  will-change: transform, opacity;
+}
+
+.hero-card.is-hovered .particle {
+  opacity: 1;
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(160px) scale(0.6);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) translateX(160px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ================= BADGE ================= */
+.hero-card-badge {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  z-index: 20;
+
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+  transition: all 0.3s ease;
+  transform: translateZ(10px);
+}
+
+.hero-card.is-hovered .hero-card-badge {
+  background: rgba(120, 200, 255, 0.12);
+  border-color: rgba(120, 200, 255, 0.3);
+  box-shadow: 
+    0 6px 20px rgba(120, 200, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7dd3fc;
+  box-shadow: 
+    0 0 10px rgba(125, 211, 252, 0.8),
+    0 0 20px rgba(125, 211, 252, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* ================= WELCOME MESSAGE ================= */
+.hero-card-welcome {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px) scale(0.94);
+  text-align: center;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 25;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.hero-card.is-hovered .hero-card-welcome {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.welcome-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: rgba(180, 220, 255, 0.75);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.welcome-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 2px 12px rgba(120, 200, 255, 0.3);
+  margin: 0;
+}
+
+/* ================= IMAGE ================= */
+.hero-card-image {
+  margin-top: 80px;
+  height: 280px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(50px);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 5;
+}
+
+.hero-card.is-hovered .hero-card-image {
+  transform: translateZ(60px) scale(1.05);
+}
+
+.hero-card-image img {
+  height: 100%;
+  width: auto;
+  max-width: 90%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  
+  filter:
+    drop-shadow(0 50px 100px rgba(0, 0, 0, 1))
+    drop-shadow(0 20px 50px rgba(0, 0, 0, 0.8))
+    drop-shadow(0 0 40px rgba(120, 200, 255, 0.1));
+  
+  transition: filter 0.5s ease;
+}
+
+.hero-card.is-hovered .hero-card-image img {
+  filter:
+    drop-shadow(0 60px 120px rgba(0, 0, 0, 1))
+    drop-shadow(0 25px 60px rgba(0, 0, 0, 0.9))
+    drop-shadow(0 0 50px rgba(120, 200, 255, 0.25));
+}
+
+/* ================= TEXT ================= */
+.hero-card-text {
+  margin-top: auto;
+  margin-bottom: 24px;
+  text-align: center;
+  transform: translateZ(20px);
+}
+
+.hero-card-name {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  font-size: 52px;
+  letter-spacing: 0.1em;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 12px;
+  text-shadow: 
+    0 4px 20px rgba(120, 200, 255, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.hero-card-name span {
+  display: inline-block;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-style: preserve-3d;
+}
+
+.hero-card.is-hovered .hero-card-name span {
+  color: #7dd3fc;
+  text-shadow: 
+    0 4px 30px rgba(120, 200, 255, 0.6),
+    0 2px 12px rgba(120, 200, 255, 0.4),
+    0 0 40px rgba(120, 200, 255, 0.3);
+}
+
+.hero-card.is-hovered .hero-card-name span:nth-child(1) {
+  transform: translateY(-3px);
+  transition-delay: 0s;
+}
+
+.hero-card.is-hovered .hero-card-name span:nth-child(2) {
+  transform: translateY(-3px);
+  transition-delay: 0.05s;
+}
+
+.hero-card.is-hovered .hero-card-name span:nth-child(3) {
+  transform: translateY(-3px);
+  transition-delay: 0.1s;
+}
+
+.hero-card-role {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.3s ease;
+  margin: 0;
+}
+
+.hero-card.is-hovered .hero-card-role {
+  color: rgba(180, 220, 255, 0.9);
+}
+
+/* ================= CTA BUTTON ================= */
+.hero-card-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding: 13px 28px;
+  border-radius: 999px;
+  
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 15;
+  transform: translateZ(15px);
+}
+
+.hero-card-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(120, 200, 255, 0.15),
+    rgba(80, 180, 255, 0.1)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hero-card-cta:hover {
+  background: rgba(120, 200, 255, 0.15);
+  border-color: rgba(120, 200, 255, 0.4);
+  color: #7dd3fc;
+  transform: translateY(-2px) translateZ(15px);
+  box-shadow: 
+    0 8px 28px rgba(120, 200, 255, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.hero-card-cta:hover::before {
+  opacity: 1;
+}
+
+.hero-card-cta:active {
+  transform: translateY(0) translateZ(15px);
+}
+
+/* ================= 🔥 BARCODE SECTION ================= */
+.hero-card-barcode {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.hero-card.is-hovered .hero-card-barcode {
+  opacity: 1;
+}
+
+.barcode-lines {
+  display: flex;
+  gap: 2px;
+  height: 50px;
+  align-items: flex-end;
+}
+
+.barcode-line {
+  width: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  height: var(--height, 100%);
+  transition: background 0.3s ease;
+}
+
+.hero-card.is-hovered .barcode-line {
+  background: rgba(125, 211, 252, 0.9);
+}
+
+.barcode-text {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+/* ================= ACCENT LINE ================= */
+.hero-card-accent {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #7dd3fc,
+    transparent
+  );
+  opacity: 0.6;
+  transition: all 0.5s ease;
+  border-radius: 1px;
+}
+
+.hero-card.is-hovered .hero-card-accent {
+  width: 160px;
+  opacity: 1;
+  box-shadow: 0 0 20px rgba(125, 211, 252, 0.6);
+}
+
+/* ================= BORDER (OPTIONAL) ================= */
+.hero-card-border {
+  position: absolute;
+  inset: -1px;
+  border-radius: 32px;
+  padding: 1px;
+  
+  background: linear-gradient(
+    135deg,
+    rgba(120, 200, 255, 0.3),
+    rgba(80, 180, 255, 0.2),
+    rgba(120, 200, 255, 0.3)
+  );
+  
+  -webkit-mask: 
+    linear-gradient(white 0 0) content-box, 
+    linear-gradient(white 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+    linear-gradient(white 0 0) content-box, 
+    linear-gradient(white 0 0);
+  mask-composite: exclude;
+  
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+  transition: opacity 0.4s ease;
+}
+
+.hero-card.is-hovered .hero-card-border {
+  opacity: 1;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .hero-card {
+    width: 360px;
+    height: 520px;
+  }
+
+  .hero-card-image {
+    height: 260px;
+    margin-top: 75px;
+  }
+
+  .hero-card-name {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-card {
+    width: 340px;
+    height: 500px;
+  }
+
+  .hero-card-image {
+    height: 240px;
+    margin-top: 70px;
+  }
+
+  .hero-card-name {
+    font-size: 44px;
+  }
+
+  .hero-card-badge {
+    top: 18px;
+    right: 18px;
+    padding: 8px 14px;
+    font-size: 9px;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .hero-card-welcome {
+    top: -70px;
+  }
+
+  .welcome-eyebrow {
+    font-size: 10px;
+  }
+
+  .welcome-title {
+    font-size: 16px;
+  }
+
+  .hero-card-cta {
+    padding: 11px 24px;
+    font-size: 12px;
+  }
+
+  .particle {
+    --size: 2px !important;
+  }
+
+  .barcode-lines {
+    height: 40px;
+  }
+
+  @keyframes orbit {
+    0% {
+      transform: rotate(0deg) translateX(120px) scale(0.6);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(360deg) translateX(120px) scale(1);
+      opacity: 0;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-card {
+    width: 320px;
+    height: 480px;
+  }
+
+  .hero-card-image {
+    height: 220px;
+    margin-top: 65px;
+  }
+
+  .hero-card-name {
+    font-size: 40px;
+    gap: 10px;
+  }
+
+  .hero-card-role {
+    font-size: 10px;
+  }
+
+  .barcode-lines {
+    height: 35px;
+  }
+
+  @keyframes orbit {
+    0% {
+      transform: rotate(0deg) translateX(100px) scale(0.6);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(360deg) translateX(100px) scale(1);
+      opacity: 0;
+    }
+  }
+}
+
+/* ================= PERFORMANCE ================= */
+.hero-card,
+.hero-card-glow,
+.particle,
+.hero-card-border,
+.hero-card-image {
+  will-change: transform, opacity;
+}
+
+/* ================= GRAIN OVERLAY ================= */
+.grain {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  z-index: 100;
+}
