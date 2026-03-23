@@ -1,141 +1,221 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
-import * as THREE from "three";
+import { useEffect, useRef } from "react";
 import { gsap } from "../utils/gsap";
 
-/* ═══════════════════════════════════════════
-   CHARACTER ASSEMBLY LOADER v1
-   Parts float in and stick together
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   CINEMATIC LOADER v2
+   Pure GSAP + HTML — no Three.js overhead
+   Curtain-reveal name → subtitle → progress bar → wipe up
+   ═══════════════════════════════════════════════════════ */
+
+const NAME_CHARS = ["A", "L", "Y", "\u00A0", "H", "A", "I", "D", "E", "R"];
 
 export default function CinematicLoader({ onComplete }: { onComplete: () => void }) {
-    const mountRef = useRef<HTMLDivElement>(null);
-    const [progress, setProgress] = useState(0);
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const charsRef      = useRef<(HTMLSpanElement | null)[]>([]);
+  const subtitleRef   = useRef<HTMLParagraphElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const counterRef    = useRef<HTMLSpanElement>(null);
+  const lineRef       = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!mountRef.current) return;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-        // ─── THREE SCENE SETUP ───
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 8;
+    const chars    = charsRef.current.filter(Boolean) as HTMLSpanElement[];
+    const subtitle = subtitleRef.current;
+    const bar      = progressBarRef.current;
+    const counter  = counterRef.current;
+    const line     = lineRef.current;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        mountRef.current.appendChild(renderer.domElement);
+    // ── Initial states ──
+    gsap.set(chars,    { yPercent: 105, opacity: 0 });
+    gsap.set(subtitle, { opacity: 0, y: 14 });
+    gsap.set(line,     { scaleX: 0 });
+    if (bar) gsap.set(bar, { scaleX: 0 });
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xc8932a, 2);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
+    const tl = gsap.timeline({ onComplete });
 
-        // ─── CHARACTER PARTS ───
-        const group = new THREE.Group();
-        scene.add(group);
+    // 1. Thin accent line extends from center
+    tl.to(line, {
+      scaleX: 1,
+      duration: 0.55,
+      ease: "expo.out",
+      transformOrigin: "center",
+    }, 0);
 
-        const skinMat = new THREE.MeshStandardMaterial({ color: "#d5cbb2", roughness: 0.3 });
-        const torsoMat = new THREE.MeshStandardMaterial({ color: "#0a0a09" });
-        const glowMat = new THREE.MeshStandardMaterial({ color: "#c8932a", emissive: "#c8932a", emissiveIntensity: 2 });
+    // 2. Name characters curtain-reveal (emerge upward through overflow-hidden slots)
+    tl.to(chars, {
+      yPercent: 0,
+      opacity: 1,
+      stagger: 0.055,
+      duration: 0.75,
+      ease: "expo.out",
+    }, 0.15);
 
-        // Head
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), skinMat);
-        head.position.set(-5, 5, -5); // Start off-screen
-        group.add(head);
+    // 3. Subtitle fades up
+    tl.to(subtitle, {
+      opacity: 1,
+      y: 0,
+      duration: 0.9,
+      ease: "power3.out",
+    }, 0.8);
 
-        // Torso
-        const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.2, 4, 16), torsoMat);
-        torso.position.set(5, -5, -5); // Start off-screen
-        group.add(torso);
+    // 4. Progress bar fills — scrubs independently from 0 → 3.4s
+    if (bar) {
+      tl.to(bar, {
+        scaleX: 1,
+        duration: 3.2,
+        ease: "power1.inOut",
+        transformOrigin: "left center",
+      }, 0.2);
+    }
 
-        // Limbs (Arms/Legs)
-        const limbs: THREE.Mesh[] = [];
-        for (let i = 0; i < 4; i++) {
-            const limb = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.8, 4, 8), torsoMat);
-            limb.position.set((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15, -10);
-            group.add(limb);
-            limbs.push(limb);
-        }
+    // 5. Counter ticks alongside progress bar
+    if (counter) {
+      tl.to({}, {
+        duration: 3.2,
+        onUpdate() {
+          counter.textContent = Math.floor(this.progress() * 100).toString().padStart(3, "0");
+        },
+      }, 0.2);
+    }
 
-        // ─── BACKGROUND PARTICLES ───
-        const partCount = 300;
-        const posArr = new Float32Array(partCount * 3);
-        for (let i = 0; i < partCount * 3; i++) posArr[i] = (Math.random() - 0.5) * 20;
-        const partGeo = new THREE.BufferGeometry();
-        partGeo.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
-        const partMat = new THREE.PointsMaterial({ color: "#c8932a", size: 0.02, transparent: true, opacity: 0.5 });
-        const particles = new THREE.Points(partGeo, partMat);
-        scene.add(particles);
+    // 6. Exit — full-panel clip-path slides UP, revealing hero beneath
+    //    Background matches hero (#090805) so transition is invisible on dark areas
+    const exitAt = 3.55;
+    tl.to(container, {
+      clipPath: "inset(0 0 100% 0)",
+      duration: 0.85,
+      ease: "power4.inOut",
+    }, exitAt);
 
-        // ─── ANIMATION TIMELINE ───
-        const tl = gsap.timeline({
-            onUpdate: () => setProgress(Math.floor(tl.progress() * 100)),
-            onComplete: () => {
-                onComplete();
-            }
-        });
+    return () => { tl.kill(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-        // 1. Assembly
-        tl.to(torso.position, { x: 0, y: -0.5, z: 0, duration: 1.5, ease: "back.out(1)" }, 0.5);
-        tl.to(head.position, { x: 0, y: 0.8, z: 0, duration: 1.2, ease: "back.out(1)" }, 1.0);
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position:      "fixed",
+        inset:         0,
+        zIndex:        1000,
+        background:    "#090805",
+        display:       "flex",
+        flexDirection: "column",
+        alignItems:    "center",
+        justifyContent:"center",
+        clipPath:      "inset(0 0 0% 0)",
+        willChange:    "clip-path",
+      }}
+    >
+      {/* Thin accent line above name */}
+      <div
+        ref={lineRef}
+        style={{
+          width:           "clamp(3rem, 8vw, 7rem)",
+          height:          "1px",
+          background:      "var(--accent)",
+          marginBottom:    "2rem",
+          transformOrigin: "center",
+          opacity:         0.7,
+        }}
+      />
 
-        limbs.forEach((limb, i) => {
-            const tx = i < 2 ? -0.6 : 0.6;
-            const ty = i % 2 === 0 ? 0 : -1.2;
-            tl.to(limb.position, { x: tx, y: ty, z: 0, duration: 1, ease: "power2.out" }, 1.2 + i * 0.2);
-        });
+      {/* Name — each character in its own overflow-hidden slot (curtain effect) */}
+      <div
+        style={{
+          display:     "flex",
+          alignItems:  "baseline",
+          overflow:    "hidden",
+          paddingBottom: "0.1em", // prevent descender clip
+        }}
+      >
+        {NAME_CHARS.map((char, i) => (
+          <span
+            key={i}
+            style={{
+              display:    "inline-block",
+              overflow:   "hidden",
+              lineHeight: 1,
+            }}
+          >
+            <span
+              ref={(el) => { charsRef.current[i] = el; }}
+              style={{
+                display:     "inline-block",
+                fontFamily:  "var(--font-display)",
+                fontSize:    "clamp(3.5rem, 9vw, 10.5rem)",
+                fontWeight:  300,
+                letterSpacing: char === "\u00A0" ? "0.12em" : "0.06em",
+                color:       "var(--fg)",
+                lineHeight:  1,
+                width:       char === "\u00A0" ? "0.45em" : undefined,
+                userSelect:  "none",
+              }}
+            >
+              {char}
+            </span>
+          </span>
+        ))}
+      </div>
 
-        // 2. Pulse / Stick Effect
-        tl.to(group.scale, { x: 1.1, y: 1.1, z: 1.1, duration: 0.3, repeat: 1, yoyo: true, ease: "power2.inOut" }, 2.5);
+      {/* Subtitle */}
+      <p
+        ref={subtitleRef}
+        style={{
+          fontFamily:    "var(--font-mono)",
+          fontSize:      "clamp(0.6rem, 1.1vw, 0.8rem)",
+          color:         "var(--accent)",
+          letterSpacing: "0.3em",
+          textTransform: "uppercase",
+          marginTop:     "1.75rem",
+          opacity:       0,
+          userSelect:    "none",
+        }}
+      >
+        Creative Developer · AI Automation
+      </p>
 
-        // 3. Reveal Name
-        tl.fromTo(".loader-name", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, 1.5);
+      {/* Progress track */}
+      <div
+        style={{
+          position:   "absolute",
+          bottom:     "10%",
+          left:       "8vw",
+          right:      "8vw",
+          height:     "1px",
+          background: "rgba(196,164,107,0.12)",
+        }}
+      >
+        <div
+          ref={progressBarRef}
+          style={{
+            position:        "absolute",
+            inset:           0,
+            background:      "linear-gradient(90deg, var(--accent), rgba(196,164,107,0.6))",
+            transformOrigin: "left center",
+          }}
+        />
+      </div>
 
-        // 4. Exit Transition
-        tl.to(group.position, { z: 10, opacity: 0, duration: 1.2, ease: "power4.in" }, 4);
-        tl.to(mountRef.current, { opacity: 0, duration: 0.8 }, 4.5);
-
-        // Render Loop
-        const animate = () => {
-            requestAnimationFrame(animate);
-            particles.rotation.y += 0.001;
-            group.rotation.y += 0.005;
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        return () => {
-            renderer.dispose();
-            mountRef.current?.removeChild(renderer.domElement);
-        };
-    }, []);
-
-    return (
-        <div ref={mountRef} className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center">
-            <style jsx>{`
-                .loader-name {
-                    font-family: var(--font-display);
-                    font-size: 5rem;
-                    font-weight: 300;
-                    letter-spacing: 0.5em;
-                    color: var(--fg);
-                    text-transform: uppercase;
-                    pointer-events: none;
-                }
-                .loader-progress {
-                    position: absolute;
-                    bottom: 10%;
-                    font-family: var(--font-mono);
-                    font-size: 0.7rem;
-                    color: var(--accent);
-                    letter-spacing: 0.2em;
-                }
-            `}</style>
-
-            <div className="loader-name absolute">ALYHA</div>
-            <div className="loader-progress uppercase">Assembling System_{progress}%</div>
-        </div>
-    );
+      {/* Counter */}
+      <span
+        ref={counterRef}
+        style={{
+          position:      "absolute",
+          bottom:        "calc(10% + 0.9rem)",
+          right:         "8vw",
+          fontFamily:    "var(--font-mono)",
+          fontSize:      "0.6rem",
+          color:         "rgba(196,164,107,0.45)",
+          letterSpacing: "0.18em",
+          userSelect:    "none",
+        }}
+      >
+        000
+      </span>
+    </div>
+  );
 }

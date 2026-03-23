@@ -6,7 +6,6 @@ import { gsap } from "../utils/gsap";
 export default function CustomCursor() {
   const dot = useRef<HTMLDivElement>(null);
   const ring = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -19,60 +18,65 @@ export default function CustomCursor() {
     const dotEl = dot.current!;
     const ringEl = ring.current!;
 
+    // ── Single persistent updaters — zero tween stacking on mousemove
+    const xDot  = gsap.quickTo(dotEl,  "x", { duration: 0.1,  ease: "power3.out" });
+    const yDot  = gsap.quickTo(dotEl,  "y", { duration: 0.1,  ease: "power3.out" });
+    const xRing = gsap.quickTo(ringEl, "x", { duration: 0.35, ease: "expo.out" });
+    const yRing = gsap.quickTo(ringEl, "y", { duration: 0.35, ease: "expo.out" });
+
+    // Hover tracked via plain object — avoids listener teardown on every hover change
+    const hover = { active: false };
+
     const onMove = (e: MouseEvent) => {
-      gsap.to(dotEl, { x: e.clientX, y: e.clientY, duration: 0.15 });
-      gsap.to(ringEl, {
-        x: e.clientX,
-        y: e.clientY,
-        scale: hover ? 1.6 : 1,
-        duration: 0.35,
-        ease: "expo.out",
-      });
+      xDot(e.clientX);
+      yDot(e.clientY);
+      xRing(e.clientX);
+      yRing(e.clientY);
+
+      // Magnetic pull merged inline — single mousemove listener
+      const mag = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-magnetic="true"]');
+      if (mag) {
+        const r  = mag.getBoundingClientRect();
+        const mx = (e.clientX - (r.left + r.width  / 2)) / r.width;
+        const my = (e.clientY - (r.top  + r.height / 2)) / r.height;
+        gsap.to(mag, { x: mx * 10, y: my * 10, duration: 0.25, ease: "power3.out", overwrite: "auto" });
+      }
     };
 
     const onOver = (e: Event) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
-      const hit =
+      const hit = !!(
         t.closest('[data-cursor="link"]') ||
         t.closest("a") ||
         t.closest("button") ||
-        t.closest('[role="button"]');
-      setHover(!!hit);
-    };
-
-    const onMagnetic = (e: MouseEvent) => {
-      const el = (e.target as HTMLElement | null)?.closest('[data-magnetic="true"]') as HTMLElement | null;
-      if (!el) return;
-
-      const r = el.getBoundingClientRect();
-      const mx = (e.clientX - (r.left + r.width / 2)) / r.width;
-      const my = (e.clientY - (r.top + r.height / 2)) / r.height;
-
-      gsap.to(el, { x: mx * 10, y: my * 10, duration: 0.25, ease: "power3.out" });
+        t.closest('[role="button"]')
+      );
+      if (hit !== hover.active) {
+        hover.active = hit;
+        gsap.to(ringEl, { scale: hit ? 1.6 : 1, duration: 0.3, ease: "expo.out", overwrite: "auto" });
+      }
     };
 
     const resetMagnetic = (e: Event) => {
-      const el = (e.target as HTMLElement | null)?.closest('[data-magnetic="true"]') as HTMLElement | null;
-      if (!el) return;
-      gsap.to(el, { x: 0, y: 0, duration: 0.35, ease: "expo.out" });
+      const mag = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-magnetic="true"]');
+      if (!mag) return;
+      gsap.to(mag, { x: 0, y: 0, duration: 0.35, ease: "expo.out", overwrite: "auto" });
     };
 
-    window.addEventListener("mousemove", onMove, { passive: true });
-    window.addEventListener("mouseover", onOver, { passive: true });
-    window.addEventListener("mousemove", onMagnetic, { passive: true });
+    window.addEventListener("mousemove", onMove,        { passive: true });
+    window.addEventListener("mouseover", onOver,        { passive: true });
     window.addEventListener("mouseleave", resetMagnetic, { passive: true });
 
     gsap.set([dotEl, ringEl], { opacity: 0 });
-    gsap.to([dotEl, ringEl], { opacity: 1, duration: 0.4 });
+    gsap.to([dotEl, ringEl],  { opacity: 1, duration: 0.4 });
 
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseover", onOver);
-      window.removeEventListener("mousemove", onMagnetic);
       window.removeEventListener("mouseleave", resetMagnetic);
     };
-  }, [hover, isMobile]);
+  }, [isMobile]); // ← `hover` removed from deps; listeners are never re-added on hover change
 
   if (isMobile) return null;
 

@@ -1,98 +1,114 @@
-/* ═══════════════════════════════════════
-   SCROLL TEXT REVEAL — Scroll-driven
-   Clean, no particle canvas
-   ═══════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   SCROLL TEXT REVEAL v2
+   Blur-dissolve word reveal, horizontal pan
+   ══════════════════════════════════════════ */
 
 /* ── Section ── */
 .str-section {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  position:   relative;
+  width:      100%;
+  height:     100vh;
+  overflow:   hidden;
   background: var(--bg);
-  z-index: 12;
+  z-index:    12;
 }
 
-/* ── Vignette ── */
+/* ── Edge vignette ── */
 .str-vig {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+  position:       absolute;
+  inset:          0;
+  z-index:        1;
   pointer-events: none;
-  background: radial-gradient(ellipse 80% 80% at 50% 50%,
-      transparent 12%,
-      rgba(9, 8, 5, 0.5) 68%,
-      rgba(5, 3, 1, 0.9) 100%);
+  background: radial-gradient(
+    ellipse 90% 80% at 50% 50%,
+    transparent 15%,
+    rgba(9, 8, 5, 0.45) 65%,
+    rgba(5, 3, 1, 0.88) 100%
+  );
 }
 
-/* ── Stage & Track ── */
+/* ── Stage & track ── */
 .str-stage {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  display: flex;
+  position:   absolute;
+  inset:      0;
+  z-index:    10;
+  display:    flex;
   align-items: center;
-  overflow: visible;
+  overflow:   visible;
 }
 
 .str-track {
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  flex-shrink: 0;
+  display:      flex;
+  align-items:  baseline;
+  white-space:  nowrap;
+  flex-shrink:  0;
   padding-left: 8vw;
-  will-change: transform;
-  gap: 0.06em;
+  will-change:  transform;
+  gap:          0.06em;
 }
 
-/* ── Words ── */
+/* ── Outer wrapper — trigger target, holds layout space ── */
+.str-word-outer {
+  display:        inline-block;
+  flex-shrink:    0;
+  vertical-align: baseline;
+  /* NOTE: do NOT set overflow:hidden here — blur needs to bleed outside bounds */
+}
+
+/* ── Inner animated span ── */
 .str-word {
-  display: inline-block;
-  flex-shrink: 0;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  color: var(--fg);
-  line-height: 0.88;
-  will-change: transform, opacity;
-  opacity: 0;
+  display:         inline-block;
+  font-family:     var(--font-display);
+  text-transform:  uppercase;
+  color:           var(--fg);
+  line-height:     0.9;
+  will-change:     transform, opacity, filter;
+  opacity:         0; /* set visible by GSAP on reveal */
 }
 
-/* ── Sizes ── */
-.str-word.xl {
-  font-size: clamp(5rem, 11vw, 12rem);
+/* ── Size variants (applied to both outer and inner) ── */
+.str-word-outer.xl, .str-word.xl {
+  font-size:      clamp(5rem, 11vw, 12rem);
   letter-spacing: -0.025em;
-  margin-right: 0.12em;
+  margin-right:   0.12em;
 }
 
-.str-word.lg {
-  font-size: clamp(3.8rem, 8.5vw, 9.5rem);
+.str-word-outer.lg, .str-word.lg {
+  font-size:      clamp(3.8rem, 8.5vw, 9.5rem);
   letter-spacing: -0.015em;
+  margin-right:   0.14em;
+}
+
+.str-word-outer.md, .str-word.md {
+  font-size:    clamp(2.6rem, 5.5vw, 6rem);
   margin-right: 0.14em;
 }
 
-.str-word.md {
-  font-size: clamp(2.6rem, 5.5vw, 6rem);
-  margin-right: 0.14em;
-}
-
-.str-word.sm {
-  font-size: clamp(1.8rem, 3.8vw, 4rem);
+.str-word-outer.sm, .str-word.sm {
+  font-size:      clamp(1.8rem, 3.8vw, 4rem);
   letter-spacing: 0.05em;
-  margin-right: 0.14em;
+  margin-right:   0.14em;
 }
 
-/* ── Colors ── */
+/* ── Color variants ── */
 .str-word.amber {
   color: var(--accent);
 }
 
-.str-word.amber2 {
-  color: #d4b878;
+/* ── Typographic variants ── */
+.str-word.italic {
+  font-style:     italic;
+  letter-spacing: 0.01em;
 }
 
-/* ── Spacer ── */
+.str-word.dim {
+  color:   var(--fg-muted);
+  opacity: 0; /* still animated by GSAP, just dimmer when revealed */
+}
+
+/* ── Trailing spacer ── */
 .str-spacer {
-  width: 30vw;
-  flex-shrink: 0;
-  display: inline-block;
+  width:        30vw;
+  flex-shrink:  0;
+  display:      inline-block;
 }

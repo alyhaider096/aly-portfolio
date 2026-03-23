@@ -140,7 +140,7 @@ export default function ConnectSection() {
     const handleBookEmail = () => {
         const subject = encodeURIComponent(`Project Booking Request: ${selectedSlot?.day} at ${selectedSlot?.time}`);
         const body = encodeURIComponent(`Hi Aly,\n\nI'd like to book a session on ${selectedSlot?.day} at ${selectedSlot?.time}.\n\nName: ${formData.name}\nEmail: ${formData.email}\nDetails: ${formData.desc}`);
-        window.location.href = `mailto:hello@aly.dev?subject=${subject}&body=${body}`;
+        window.location.href = `mailto:aly.haider096@gmail.com?subject=${subject}&body=${body}`;
         closeModal();
     };
 

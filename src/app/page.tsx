@@ -16,7 +16,7 @@ export default function Page() {
 
   return (
     <>
-      {/* Loader */}
+      {/* Loader — slides up via clip-path on exit, revealing hero beneath */}
       {!ready && <CinematicLoader onComplete={() => setReady(true)} />}
 
       {/* Main Content */}
@@ -29,30 +29,27 @@ export default function Page() {
           {/* Hero Section (background, orb, overlays) */}
           <Hero ready={ready} />
 
-          {/* About Section */}
-          <AboutSection />
+          {/* About Section — id for navbar scroll target */}
+          <div id="about">
+            <AboutSection />
+          </div>
         </div>
 
         {/* ScrollTrigger Horizontal Text Reveal */}
         <ScrollTextReveal />
 
-        {/* Work / Projects Section */}
-        <WorkSection />
+        {/* Work / Projects Section — id for navbar scroll target */}
+        <div id="work">
+          <WorkSection />
+        </div>
 
         {/* Cinematic Expertise Section */}
         <ExpertiseSection />
 
-        {/* 🔥 CARD WRAPPER — Page-level fixed overlay, ABOVE everything */}
+        {/* CARD WRAPPER — Page-level fixed overlay, ABOVE everything */}
         <div
           id="hero-card-wrapper"
-          className="
-            pointer-events-none 
-            fixed 
-            inset-0 
-            flex 
-            items-center 
-            justify-center
-          "
+          className="pointer-events-none fixed inset-0 flex items-center justify-center"
           style={{
             transformStyle: "preserve-3d",
             perspective: "1200px",
